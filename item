@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Questionnaire tension artérielle</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&display=swap">
+<style>
+:root{--bg:#e9f1f0;--card:#fff;--tx:#12302f;--mut:#5b7573;--ac:#0a6c74;--acx:#fff;--bd:#cfe0de;--hi:#fff4d6;--hix:#5a4300;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1a1a;--card:#13292a;--tx:#e6f2f1;--mut:#93b0ae;--ac:#4fc3cc;--acx:#06201f;--bd:#26443f;--hi:#3a3015;--hix:#ffe7a3}}
+:root[data-theme="dark"]{--bg:#0b1a1a;--card:#13292a;--tx:#e6f2f1;--mut:#93b0ae;--ac:#4fc3cc;--acx:#06201f;--bd:#26443f;--hi:#3a3015;--hix:#ffe7a3}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+.phone{max-width:420px;min-height:100vh;margin:0 auto;background:var(--card);display:flex;flex-direction:column;padding:20px 20px 28px}
+@media (min-width:480px){.phone{min-height:760px;margin:24px auto;border-radius:28px;border:1px solid var(--bd)}}
+.bar{height:6px;background:var(--bd);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ac);transition:width .25s}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:28px;min-height:36px}
+.back{background:none;border:0;color:var(--ac);font:inherit;font-weight:600;cursor:pointer;padding:6px 0}
+.top .bar{flex:1}
+h1{font-family:Newsreader,Georgia,serif;font-weight:600;font-size:26px;line-height:1.2;margin:0 0 8px}
+.sub{color:var(--mut);margin:0 0 22px;font-size:14px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt,.go{font:inherit;text-align:left;padding:14px 16px;border-radius:14px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer}
+.opt:hover,.opt:focus-visible{border-color:var(--ac);outline:none}
+.go{background:var(--ac);color:var(--acx);border-color:var(--ac);font-weight:600;text-align:center;margin-top:14px;width:100%}
+input{font:inherit;width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx)}
+input:focus{outline:2px solid var(--ac);border-color:transparent}
+.err{color:#c0392b;font-size:14px;min-height:20px;margin-top:8px}
+.res{background:var(--hi);color:var(--hix);border-radius:16px;padding:16px 18px;margin:6px 0 12px}
+.res b{display:block;font-family:Newsreader,Georgia,serif;font-size:22px;line-height:1.25;margin-top:2px}
+.meta{display:flex;flex-direction:column;gap:6px;color:var(--mut);font-size:14px;margin:14px 0}
+.note{font-size:13px;color:var(--mut);margin-top:auto;padding-top:20px}
+</style>
+</head>
+<body>
+<div class="phone" id="app"></div>
+<script>
+var yn=[["1","Oui"],["0","Non"]];
+var Q=[
+{id:"sexe",t:"Quel est votre sexe ?",o:[["1","Homme"],["2","Femme"]]},
+{id:"age",t:"Quel est votre âge ?",s:"En années",n:[18,120]},
+{id:"preg",t:"Êtes-vous enceinte ou en post-partum ?",o:yn,show:function(a){return a.sexe=="2"}},
+{id:"cvd",t:"Avez-vous une maladie cardiovasculaire ?",s:"Infarctus, AVC, insuffisance cardiaque, etc.",o:yn},
+{id:"dia",t:"Avez-vous un diabète ?",o:yn},
+{id:"ckd",t:"Avez-vous une maladie rénale chronique ?",o:yn},
+{id:"risk",t:"Votre médecin vous a-t-il dit que votre risque cardiovasculaire est élevé ?",o:yn},
+{id:"salt",t:"Consommez-vous des aliments riches en sel ?",o:[["1","Souvent"],["2","Parfois"],["3","Jamais"]]},
+{id:"act",t:"Faites-vous de l’activité physique ?",o:[["1","Jamais"],["2","Parfois"],["3","2 fois par semaine"],["4","3 fois par semaine ou plus"]]},
+{id:"veg",t:"Combien de portions de légumes mangez-vous ?",o:[["1","4 ou plus par jour"],["2","2 à 3 par jour"],["3","1 ou moins par jour"]]},
+{id:"meat",t:"Mangez-vous de la viande grasse ?",o:[["1","Moins d’1 fois par semaine"],["2","1 à 2 fois par semaine"],["3","3 fois par semaine ou plus"]]},
+{id:"smoke",t:"Fumez-vous ou vapotez-vous ?",o:[["1","Oui"],["2","Parfois ou ex-fumeur"],["3","Non"]]},
+{id:"stress",t:"Comment décrivez-vous votre niveau de stress ?",o:[["1","Faible"],["2","Modéré"],["3","Élevé"]]},
+{id:"sleep",t:"Combien d’heures dormez-vous par nuit ?",o:[["1","Moins de 5 h"],["2","5 à 6 h"],["3","7 à 9 h"],["4","Plus de 9 h"]]},
+{id:"sit",t:"Combien d’heures restez-vous assis par jour ?",o:[["1","Moins de 4 h"],["2","4 à 8 h"],["3","Plus de 8 h"]]},
+{id:"h",t:"Quelle est votre taille ?",s:"En centimètres",n:[100,250]},
+{id:"w",t:"Quel est votre poids ?",s:"En kilogrammes",n:[30,300]},
+{id:"fam",t:"Un proche parent a-t-il de l’hypertension ?",s:"Mère, père, frères, sœurs",o:[["1","Aucun"],["2","Un parent proche"],["3","2 parents proches ou plus"],["4","Je ne sais pas"]]},
+{id:"alc",t:"Combien d’alcool consommez-vous ?",o:[["1","Aucun"],["2","1 à 2 verres par semaine"],["3","3 à 6 verres par semaine"],["4","7 à 14 verres par semaine"],["5","Plus de 14 verres par semaine"]]}
+];
+var a={},cur=0,hist=[],app=document.getElementById("app");
+
+function nextQ(){var n=cur+1;while(n<Q.length&&Q[n].show&&!Q[n].show(a))n++;hist.push(cur);cur=n;draw()}
+function prevQ(){cur=hist.pop();draw()}
+function restart(){a={};cur=0;hist=[];draw()}
+
+function top(){
+  var p=Math.round(cur/Q.length*100);
+  return '<div class="top">'+(hist.length?'<button class="back" id="bk">Retour</button>':'')+'<div class="bar"><i style="width:'+p+'%"></i></div></div>';
+}
+
+function draw(){
+  if(cur>=Q.length){return result()}
+  var q=Q[cur],h=top()+'<h1>'+q.t+'</h1><p class="sub">'+(q.s||"")+'</p>';
+  if(q.o){
+    h+='<div class="opts">'+q.o.map(function(o){return '<button class="opt" data-v="'+o[0]+'">'+o[1]+'</button>'}).join("")+'</div>';
+  }else{
+    h+='<input id="in" type="text" inputmode="decimal" autocomplete="off" value="'+(a[q.id]||"")+'"><div class="err" id="er"></div><button class="go" id="ok">Continuer</button>';
+  }
+  app.innerHTML=h;
+  var bk=document.getElementById("bk");if(bk)bk.onclick=prevQ;
+  if(q.o){
+    Array.prototype.forEach.call(app.querySelectorAll(".opt"),function(b){b.onclick=function(){a[q.id]=b.dataset.v;nextQ()}});
+  }else{
+    var inp=document.getElementById("in");
+    var go=function(){
+      var v=parseFloat(inp.value.replace(",","."));
+      if(isNaN(v)||v<q.n[0]||v>q.n[1]){document.getElementById("er").textContent="Entrez un nombre entre "+q.n[0]+" et "+q.n[1]+".";return}
+      a[q.id]=v;nextQ();
+    };
+    document.getElementById("ok").onclick=go;
+    inp.onkeydown=function(e){if(e.key=="Enter")go()};
+    inp.focus();
+  }
+}
+
+function bmiLabel(b){return b<18.5?"Insuffisance pondérale":b<25?"Poids santé":b<30?"Surpoids":b<35?"Obésité classe 1":b<40?"Obésité classe 2":"Obésité classe 3"}
+
+function compute(){
+  var age=a.age,preg=a.preg=="1",cvd=a.cvd=="1",dia=a.dia=="1",ckd=a.ckd=="1",risk=a.risk=="1";
+  var mf=(preg?1:0)+(cvd?1:0)+(dia?1:0)+(ckd?1:0)+(risk?1:0)+(age>=65?1:0);
+  var D="Discrétion du médecin",P1="1 prise par 2 jours",P2="2 par jour",P3="3 par jour";
+  var by=function(i,s,l,t){var p=l==0?P1:l==1?P2:P3;return{seuil:s,prises:p,profil:t[l]}};
+  var ex=function(){return(ckd?1:0)+(risk?1:0)+(age>=65&&age<=74?1:0)};
+  var lv,e,r;
+  if(preg&&age>=35){lv=mf<=1?0:mf==2?1:2;return by(0,D,lv,[1,2,3])}
+  if(cvd&&dia){return by(0,D,mf<=2?1:2,[0,4,5])}
+  if(dia&&age>=75&&!cvd){return by(0,D,mf<=2?1:2,[0,6,7])}
+  if(cvd&&age>=75&&!dia){return by(0,D,mf<=2?1:2,[0,8,9])}
+  if(preg&&age<=34){lv=mf<=1?0:mf==2?1:2;return by(0,"diastolique < 85 mmHg",lv,[10,11,12])}
+  if(dia&&age<75&&!cvd){e=ex();return by(0,"< 130/80 mmHg",Math.min(e,2),[13,14,15])}
+  if(cvd&&age<75&&!dia){e=ex();return by(0,"< 140/90 mmHg",Math.min(e,2),[16,17,18])}
+  if(ckd&&age>50&&age<75&&!cvd&&!dia&&!preg){
+    e=(risk?1:0)+(age>=65?1:0);
+    if(e==0&&age<=64)return by(0,"< 140/90 mmHg",0,[19]);
+    if(e==1)return by(0,"< 140/90 mmHg",1,[0,20]);
+    return by(0,"< 140/90 mmHg",2,[0,0,21]);
+  }
+  if(age>=61&&!cvd&&!dia&&!preg){
+    if(age<=64||(age<=74&&!risk))return by(0,"< 140/90 mmHg",0,[22]);
+    if(age<=74&&risk)return by(0,"< 140/90 mmHg",1,[0,23]);
+    lv=(ckd&&risk)?2:(ckd||risk)?1:0;return by(0,"systolique < 120 mmHg",lv,[24,25,26]);
+  }
+  e=(risk?1:0)+(ckd&&age<=50?1:0);
+  return by(0,"140/90 mmHg (à confirmer par le médecin)",e<=1?0:1,[27,28]);
+}
+
+function result(){
+  var r=compute(),m=a.h/100,b=a.w/(m*m);
+  var mf=(a.preg=="1"?1:0)+(a.cvd=="1"?1:0)+(a.dia=="1"?1:0)+(a.ckd=="1"?1:0)+(a.risk=="1"?1:0)+(a.age>=65?1:0);
+  app.innerHTML='<div class="top"><div class="bar"><i style="width:100%"></i></div></div>'
+   +'<h1>Votre suivi recommandé</h1><p class="sub">Profil n° '+r.profil+'</p>'
+   +'<div class="res">Seuil cible<b>'+r.seuil+'</b></div>'
+   +'<div class="res">Prises recommandées<b>'+r.prises+'</b></div>'
+   +'<div class="meta"><span>IMC : '+b.toFixed(1)+' ('+bmiLabel(b)+')</span><span>Facteurs de risque majeurs : '+mf+'</span></div>'
+   +'<button class="go" id="rs">Recommencer</button>'
+   +'<p class="note">Cet outil aide à la décision. Le seuil final et la fréquence doivent être confirmés par votre médecin.</p>';
+  document.getElementById("rs").onclick=restart;
+}
+draw();
+</script>
+</body>
+</html>
